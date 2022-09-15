@@ -1,6 +1,3 @@
-import asyncio
-from concurrent.futures import thread
-from email.mime import image
 import pytesseract
 from pytesseract import Output
 import cv2
@@ -16,10 +13,8 @@ serverAddress = ('localhost', 2021)
 def listening():
     global input
     
-    sock.sendto('1.png'.encode(), serverAddress)
-
     while True:
-        data, server = sock.recvfrom(4096)
+        data = sock.recvfrom(4096)
         if data:
             input.append(data.decode()) 
             if not isBusy:
