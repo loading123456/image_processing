@@ -228,4 +228,4 @@ def translate(img_path):
 # translateImage('test2.png')
 # translateImage('test3.png')
 # translateImage('test4.png')
-# translateImage('test5.png')
+translate('2.png')
