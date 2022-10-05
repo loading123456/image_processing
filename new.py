@@ -6,7 +6,7 @@ import googletrans
 import time
 from pytesseract import Output
 import re
-
+from PIL import Image, ImageFont, ImageDraw
 
 
 def getContrastColor(rbg):
@@ -215,15 +215,13 @@ class UnArea:
 
 
 class TextBox:
-
     def __init__(self, line:Line) -> None:
         self.lines = [line]
         self.lineSize = 1
         self.height = line.height
-        # self.width = line.width
         self.epsilonHeight = self.height * 0.3
-        self.lineSpace = self.height * 0.6
-        # self.epsilonCenter = 
+        self.lineSpace = self.height 
+        self.textLines = []
 
     def __getPosition(self, line:Line):
         if (line.startPoint[1] - self.lines[-1].endPoint[1] <= self.lineSpace
@@ -241,15 +239,35 @@ class TextBox:
         position = self.__getPosition(line)
         if position:
             self.lines.append(line)
+            self.lineSize += 1
             return True
         return False
     
     def show(self):
         text = ''
+        l = 0
         for line in self.lines:
-            text += line.getText() + '\n'
-        print(text)
+            text += line.getText() + ' _' + str(l) + ' '
+            l += 1
+        tText = googletrans.Translator().translate(text, dest='vi').text
+        self.textLines = re.split('_\d', tText)
+        for textLine in self.textLines:
+            print(textLine,'\n=========================================')
+        print('Line: ', len(self.lines))
         print("------------------------------------------------------------------")
+
+    def draw(self, img):
+        for i in range(self.lineSize):
+            font = ImageFont.truetype(r'font/Arimo-VariableFont_wght.ttf', int(self.lines[i].height))
+            img1 = ImageDraw.Draw(img)
+            x, y = self.lines[i].startPoint
+            x = int(x)
+            y = int(y)
+            w, h = self.lines[i].endPoint
+            w = int(w)
+            h = int(h)
+            img1.rectangle([(x, y), (w, h)], fill=(255, 255, 255))
+            img1.text((x, y),text=self.textLines[i] , font=font,  fill=(0, 0, 0))
 
 def convertToWords(imgData, imgSize):
     words = []
@@ -319,12 +337,30 @@ def main(imgPath):
         textBox.show()
 
 
-    for  line in lines:
-        cv2.rectangle(img, line.startPoint, line.endPoint, (255, 0, 255), 1)
+    outputImg = Image.open('images/' + imgPath)
+
+    for textBox in textBoxs:
+        textBox.draw(outputImg)
+
+
+
+    outputImg.save('output/finally_' + imgPath)
+    # for  line in lines:
+    #     cv2.rectangle(img, line.startPoint, line.endPoint, (255, 0, 255), 1)
         # cv2.putText(img, line.getText(), line.startPoint, 1, 1, (255, 0, 255))
 
     print("Excuse time: ", time.time() - st)
 
     cv2.imwrite('output/part_' + imgPath, img)
 
-main('5.png')
+main('1.png')
+main('2.png')
+main('3.png')
+main('4.png')
+# main('5.png')
+main('a5.png')
+main('a6.png')
+
+# text = googletrans.Translator().translate('Special pages _ Permanent link', dest='vi').text
+
+# print(text)
